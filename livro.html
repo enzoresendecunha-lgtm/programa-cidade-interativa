@@ -97,8 +97,8 @@ a{color:inherit}
 
 <script src="cadastro.js"></script>
 <script>
-const TOTAL = 64, LIVRE = 12;    // As primeiras 12 páginas são abertas.
-                                // As demais moram fora da pasta pública: a API só as entrega com a chave do cadastro.
+const TOTAL = 64, LIVRE = 64;    // Livro todo aberto: todas as páginas são lidas direto de livro/p-NN.webp (sem cadastro e sem /api).
+                                // Para voltar a travar, reduza LIVRE (e tire as páginas bloqueadas da pasta pública).
 const SUM = [['Capa',1],['Prefácio',4],['Sumário',6],['O Oceano do Policentrismo Interativo',7],['Da cidade monocêntrica à malha colaborativa',13],
   ['Os 7 Núcleos Vocacionais',17],['CONECTA — Parque Tecnológico',18],['INTEGRA — Parque Interativo',24],['PRODUZA — Parque Indústria',30],
   ['ENCONTRA — Consumo e Diversão',36],['CONTEMPLA — Parque Ecológico',42],['DIVIRTA — Lazer e Esporte',48],['CONVIVA — o coração',53],
