@@ -1,0 +1,231 @@
+<!doctype html>
+<!-- atlas-migrator:skip — laboratório 100% no navegador, de propósito: o arquivo do terreno (KMZ/KML/DXF) é lido e analisado na máquina do visitante e só sai dela se ele clicar em enviar; mapa Leaflet e maquete Three.js desenham em canvas. Não há dado de servidor para virar fragmento htmx. -->
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laboratório do Parque · Cidade Interativa</title>
+<meta name="description" content="Envie o KMZ, KML, GeoJSON ou DXF do seu terreno e veja um estudo conceitual de Centralidade Planejada com os Núcleos Vocacionais do Cidade Interativa.">
+<meta name="theme-color" content="#f4ecdd">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css">
+<style>
+:root{--papel:#f4ecdd;--papel-2:#ede1cb;--papel-3:#e4d4b6;--tinta:#3b2615;--tinta-2:#6b4a30;--tinta-3:#8c6d52;--corten:#8a4320;--ipe:#e3a913;--linha:rgba(59,38,21,.16);
+  --sombra:0 24px 60px -28px rgba(59,38,21,.45);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--papel:#1d140c;--papel-2:#261a10;--papel-3:#332316;--tinta:#f1e4cc;--tinta-2:#d8c2a0;--tinta-3:#a88c6c;--corten:#d27a46;--linha:rgba(241,228,204,.16);--sombra:0 24px 60px -28px rgba(0,0,0,.7);color-scheme:dark}}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--papel);color:var(--tinta);font-family:"Cormorant Garamond",Georgia,serif;font-size:18px;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px clamp(16px,3vw,36px);border-bottom:1px solid var(--linha);font-family:"Cinzel",serif;font-size:12px;letter-spacing:.3em}
+header a{text-decoration:none}
+header b{color:var(--corten)}
+.hero{padding:clamp(28px,5vw,60px) clamp(16px,4vw,48px) 20px;max-width:1240px;margin:auto}
+.kicker{font-family:"Cinzel",serif;letter-spacing:.4em;font-size:11px;color:var(--corten);text-transform:uppercase}
+h1{font-family:"Cinzel",serif;color:var(--corten);letter-spacing:.06em;font-size:clamp(30px,4.4vw,60px);line-height:1.05;margin:12px 0}
+.hero p{max-width:760px;font-size:clamp(19px,1.6vw,23px);color:var(--tinta-2);font-style:italic}
+.app{display:grid;grid-template-columns:380px 1fr;gap:20px;max-width:1240px;margin:0 auto;padding:10px clamp(16px,4vw,48px) 60px}
+.painel{display:flex;flex-direction:column;gap:14px}
+.box{background:color-mix(in srgb,var(--papel-2) 70%,transparent);border:1px solid var(--linha);border-radius:12px;padding:18px}
+.box h2{font-family:"Cinzel",serif;font-size:14px;letter-spacing:.22em;color:var(--corten);margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.box h2 i{font-style:normal;width:22px;height:22px;border-radius:50%;background:var(--corten);color:#fbf1df;display:grid;place-items:center;font:600 11px Inter,sans-serif;letter-spacing:0}
+.drop{border:1.5px dashed color-mix(in srgb,var(--corten) 55%,transparent);border-radius:10px;padding:18px;text-align:center;cursor:pointer;transition:background .2s}
+.drop:hover,.drop.over{background:color-mix(in srgb,var(--ipe) 14%,transparent)}
+.drop b{display:block;font-family:"Cinzel",serif;letter-spacing:.1em;color:var(--corten);font-size:15px}
+.drop small{font:12px Inter,sans-serif;color:var(--tinta-3)}
+.mini{font:12.5px/1.5 Inter,sans-serif;color:var(--tinta-3);margin-top:10px}
+.mini select{font:12.5px Inter,sans-serif;padding:3px 6px;border-radius:6px;border:1px solid var(--linha);background:var(--papel);color:var(--tinta)}
+.msg{font:13px/1.45 Inter,sans-serif;margin-top:10px;min-height:18px}
+.msg.err{color:#b3261e}.msg.ok{color:#2f6b3a}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips label{cursor:pointer}
+.chips input{position:absolute;opacity:0;pointer-events:none}
+.chips span{display:inline-block;font:500 12.5px Inter,sans-serif;padding:8px 12px;border-radius:99px;border:1px solid var(--linha);transition:.2s;user-select:none}
+.chips input:checked+span{background:var(--corten);color:#fbf1df;border-color:var(--corten)}
+.chips input:focus-visible+span{outline:2px solid var(--ipe)}
+.nucs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.nuc{display:flex;align-items:center;gap:8px;font:500 12px Inter,sans-serif;padding:8px 10px;border:1px solid var(--linha);border-radius:8px;cursor:pointer;user-select:none}
+.nuc input{accent-color:var(--corten)}
+.nuc i{width:12px;height:12px;border-radius:3px;flex:0 0 auto}
+.nuc.fixo{opacity:.85;cursor:default}
+.btn{font-family:"Cinzel",serif;letter-spacing:.18em;font-size:12px;padding:13px 18px;border-radius:99px;border:1px solid var(--corten);background:var(--corten);color:#fbf1df;cursor:pointer;width:100%}
+.btn.s{background:transparent;color:var(--corten)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.vista{position:relative;min-height:640px;border-radius:14px;overflow:hidden;border:1px solid var(--linha);box-shadow:var(--sombra);background:var(--papel-3)}
+#mapa,#tres{position:absolute;inset:0;width:100%;height:100%}
+#tres{display:none;background:radial-gradient(ellipse at 50% 40%,#f6efe1,#e2d3b6)}
+.vista.em3d #tres{display:block}.vista.em3d #mapa{visibility:hidden}
+.abas{position:absolute;top:12px;right:12px;z-index:1000;display:flex;background:color-mix(in srgb,var(--papel) 88%,transparent);border:1px solid var(--linha);border-radius:99px;padding:3px;backdrop-filter:blur(8px)}
+.abas button{border:0;background:transparent;color:var(--tinta);font:500 12px Inter,sans-serif;padding:7px 14px;border-radius:99px;cursor:pointer}
+.abas button.on{background:var(--corten);color:#fbf1df}
+.legenda{position:absolute;left:12px;bottom:12px;z-index:1000;background:color-mix(in srgb,var(--papel) 90%,transparent);border:1px solid var(--linha);border-radius:10px;padding:10px 12px;font:12px Inter,sans-serif;display:none;max-width:260px;backdrop-filter:blur(8px)}
+.legenda.on{display:block}
+.legenda div{display:flex;align-items:center;gap:8px;margin:3px 0}
+.legenda i{width:12px;height:12px;border-radius:3px}
+.vazio{position:absolute;inset:0;display:grid;place-items:center;z-index:900;pointer-events:none;text-align:center}
+.vazio div{background:color-mix(in srgb,var(--papel) 90%,transparent);border:1px solid var(--linha);border-radius:12px;padding:18px 22px;max-width:360px;font-size:18px;color:var(--tinta-2)}
+.resultado{max-width:1240px;margin:0 auto;padding:0 clamp(16px,4vw,48px) 80px;display:none}
+.resultado.on{display:block}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}
+.kpi{border:1px solid var(--linha);border-radius:10px;padding:16px;background:color-mix(in srgb,var(--papel-2) 60%,transparent)}
+.kpi .v{font-family:"Cinzel",serif;font-size:clamp(24px,2.4vw,34px);color:var(--corten);line-height:1}
+.kpi .l{font:12px/1.4 Inter,sans-serif;color:var(--tinta-3);margin-top:6px}
+table{width:100%;border-collapse:collapse;font:13.5px Inter,sans-serif;margin-top:8px}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--linha);vertical-align:top}
+th{font:600 11px Inter,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--tinta-3)}
+td.n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+td i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px}
+.grid2{display:grid;grid-template-columns:1.2fr .8fr;gap:24px;margin-top:22px}
+.nota{font:12.5px/1.55 Inter,sans-serif;color:var(--tinta-3);border-left:2px solid var(--ipe);padding:10px 14px;margin-top:18px;background:color-mix(in srgb,var(--papel-2) 50%,transparent)}
+.metas li{margin:6px 0 6px 18px;font-size:17px;color:var(--tinta-2)}
+.leaflet-container{font-family:Inter,sans-serif;background:var(--papel-3)}
+.atelie{display:grid;grid-template-columns:360px 1fr;gap:24px;margin-top:40px;padding-top:30px;border-top:1px solid var(--linha);align-items:start}
+.atelie-h{font-family:"Cinzel",serif;color:var(--corten);letter-spacing:.06em;font-size:clamp(22px,2.2vw,30px);margin:10px 0}
+.atelie-t p{font-size:18px;color:var(--tinta-2);margin-bottom:16px}
+.atelie-b{display:grid;gap:8px}
+.atelie-f{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--linha);background:#f4ecdd;box-shadow:var(--sombra);aspect-ratio:3/2;display:grid;place-items:center;margin:0}
+.atelie-f img{width:100%;height:100%;object-fit:contain;display:block;cursor:zoom-in;animation:revela 1.2s cubic-bezier(.2,.8,.2,1)}
+@keyframes revela{from{opacity:0;filter:blur(14px) saturate(.4);transform:scale(1.03)}to{opacity:1;filter:none;transform:none}}
+.atelie-vazio{font-style:italic;color:#8c6d52;font-size:20px}
+.atelie-f.gerando[data-estilo=aquarela]::after{content:"pintando a aquarela…"}
+.atelie-f.gerando::after{content:"montando a maquete…";position:absolute;inset:0;display:grid;place-items:center;background:rgba(244,236,221,.75);font:italic 22px "Cormorant Garamond",serif;color:#8a4320}
+.como{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:22px 0 6px;padding:0;counter-reset:c}
+.como li{counter-increment:c;background:color-mix(in srgb,var(--papel-2) 75%,transparent);border:1px solid var(--linha);border-radius:12px;padding:14px 14px 14px 52px;position:relative;font:14px/1.45 Inter,sans-serif;color:var(--tinta-2)}
+.como li::before{content:counter(c);position:absolute;left:14px;top:14px;width:26px;height:26px;border-radius:50%;background:var(--corten);color:#fbf1df;display:grid;place-items:center;font:600 13px Inter,sans-serif}
+.como b{display:block;font-family:"Cinzel",serif;color:var(--corten);letter-spacing:.06em;font-size:14px;margin-bottom:2px}
+.comecar{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}.comecar .btn{width:auto;padding:14px 24px}
+.drop{padding:26px 18px;background:color-mix(in srgb,var(--ipe) 8%,transparent);border-width:2px}
+.drop .ic{display:block;font-size:30px;line-height:1;margin-bottom:8px}
+.drop.pisca,.btn.pisca{animation:pisca 1.4s ease-in-out 3}@keyframes pisca{50%{background:color-mix(in srgb,var(--ipe) 30%,transparent);transform:scale(1.02)}}
+.alt{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.alt .btn{padding:11px 10px;font-size:11px;letter-spacing:.12em}
+.guia{margin-top:12px;border-top:1px solid var(--linha);padding-top:10px;font:13.5px/1.55 Inter,sans-serif;color:var(--tinta-2)}
+.guia summary{cursor:pointer;font-weight:600;color:var(--corten);list-style:none}.guia summary::before{content:"▸ ";}.guia[open] summary::before{content:"▾ "}
+.guia h4{font:600 12px Inter,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--tinta-3);margin:12px 0 4px}
+.guia ol{padding-left:20px;margin:0}.guia li{margin:3px 0}
+@media (max-width:860px){.como{grid-template-columns:1fr 1fr}}
+@media (max-width:480px){.como{grid-template-columns:1fr}.comecar .btn{width:100%}}
+@media (max-width:980px){.atelie{grid-template-columns:1fr}}
+@media (max-width:980px){.app{grid-template-columns:1fr}.vista{min-height:520px}.kpis{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><a href="./"><span>CIDADE</span> <b>INTERATIVA</b></a><nav style="display:flex;gap:18px"><a href="livro.html">Ler o livro</a><a href="./#nucleos">Os 7 núcleos</a></nav></header>
+
+<section class="hero">
+  <span class="kicker">Laboratório do Parque Interativo</span>
+  <h1>Que centralidade cabe no seu terreno?</h1>
+  <p>Envie a poligonal da área — ou desenhe no mapa — e veja um estudo conceitual de Centralidade Planejada: o raio de 5 minutos, os Núcleos Vocacionais que combinam com o entorno, a maquete em 3D e uma imagem conceito do seu parque.</p>
+  <div class="comecar">
+    <button class="btn" id="hEnviar" type="button">Enviar meu KMZ agora</button>
+    <button class="btn s" id="hExemplo" type="button">Ver um exemplo pronto</button>
+  </div>
+  <ol class="como" aria-label="Como funciona">
+    <li><b>Envie o terreno</b>O arquivo KMZ do Google Earth (ou KML, GeoJSON, DXF) — ou desenhe a área no mapa.</li>
+    <li><b>Conte o entorno</b>Marque o que existe perto: universidade, rio, rodovia, comércio…</li>
+    <li><b>Gere o estudo</b>Veja o raio de 5 minutos, os núcleos, a maquete 3D e crie a imagem conceito.</li>
+    <li><b>Envie à equipe</b>Mande o terreno para o programa analisar — com o arquivo e a imagem.</li>
+  </ol>
+</section>
+
+<section class="app">
+  <aside class="painel">
+    <div class="box">
+      <h2><i>1</i>O terreno</h2>
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="Escolher arquivo do terreno">
+        <span class="ic" aria-hidden="true">📍</span><b>Toque aqui e escolha o arquivo do terreno</b><small>KMZ do Google Earth · KML · GeoJSON · DXF — no computador, também pode arrastar o arquivo para cá</small>
+      </div>
+      <div class="alt">
+        <button class="btn s" id="desenharB" type="button">✎ Desenhar no mapa</button>
+        <button class="btn s" id="exemplo" type="button">▶ Usar um exemplo</button>
+      </div>
+      <details class="guia">
+        <summary>Como tirar o KMZ do Google Earth?</summary>
+        <h4>No computador — Google Earth Pro</h4>
+        <ol><li>Procure o endereço do terreno.</li><li>Clique em <b>Adicionar polígono</b> (barra de cima) e dê um nome.</li><li>Clique no contorno do terreno, ponto a ponto, e confirme em <b>OK</b>.</li><li>No painel <b>Lugares</b>, clique com o botão direito no polígono → <b>Salvar lugar como…</b> → tipo <b>KMZ</b>.</li></ol>
+        <h4>No navegador — earth.google.com</h4>
+        <ol><li>Abra <b>Projetos</b> → <b>Novo projeto</b>.</li><li>Use <b>Desenhar linha ou forma</b> e contorne o terreno.</li><li>No menu do projeto (⋮), escolha <b>Exportar como arquivo KML</b>.</li></ol>
+        <h4>No celular</h4>
+        <ol><li>Se alguém te mandou o KMZ (WhatsApp, e-mail), toque no quadro acima e escolha o arquivo nos <b>Arquivos</b> / <b>Downloads</b>.</li><li>Não tem o arquivo? Use <b>✎ Desenhar no mapa</b>: toque nos cantos do terreno e feche no primeiro ponto.</li></ol>
+      </details>
+      <input type="file" id="arq" accept=".kmz,.kml,.geojson,.json,.dxf" hidden>
+      <div class="mini">DXF em coordenadas UTM? Fuso:
+        <select id="fuso"><option value="22">22S (Uberlândia, Triângulo)</option><option value="23">23S (BH, SP, RJ)</option><option value="21">21S</option><option value="24">24S</option></select>
+        · Ou <a href="#" id="desenhar">desenhe a área no mapa</a>.</div>
+      <div class="msg" id="msgArq" aria-live="polite"></div>
+    </div>
+    <div class="box">
+      <h2><i>2</i>O que existe perto?</h2>
+      <div class="chips" id="contexto">
+        <label><input type="checkbox" value="CONECTA"><span>Universidade / hospital</span></label>
+        <label><input type="checkbox" value="CONTEMPLA"><span>Rio, mata ou nascente</span></label>
+        <label><input type="checkbox" value="PRODUZA"><span>Rodovia / distrito industrial</span></label>
+        <label><input type="checkbox" value="ENCONTRA"><span>Avenida comercial</span></label>
+        <label><input type="checkbox" value="INTEGRA"><span>Bairros consolidados</span></label>
+        <label><input type="checkbox" value="DIVIRTA"><span>Escolas / clubes</span></label>
+      </div>
+      <p class="mini">O CONVIVA entra sempre: é o núcleo essencial. Os demais são sugeridos pelo entorno e pelo tamanho da área — ajuste à vontade abaixo.</p>
+    </div>
+    <div class="box">
+      <h2><i>3</i>Núcleos do estudo</h2>
+      <div class="nucs" id="nucs"></div>
+      <div class="msg" id="msgNuc"></div>
+    </div>
+    <button class="btn" id="gerar" disabled>Gerar a centralidade</button>
+    <div class="btns"><button class="btn s" id="bGeo" disabled>Baixar GeoJSON</button><button class="btn s" id="bKml" disabled>Baixar KML</button></div>
+    <button class="btn s" id="enviar" disabled>Enviar para a equipe do programa</button>
+  </aside>
+
+  <div class="vista" id="vista">
+    <div id="mapa" aria-label="Mapa do terreno"></div>
+    <canvas id="tres" aria-label="Maquete 3D da centralidade"></canvas>
+    <div class="abas"><button class="on" id="aMapa">Mapa</button><button id="a3d" disabled>Maquete 3D</button></div>
+    <div class="legenda" id="legenda"></div>
+    <div class="vazio" id="vazio"><div>Envie a poligonal do terreno ou <b>desenhe no mapa</b> para começar.</div></div>
+  </div>
+</section>
+
+<section class="resultado" id="resultado">
+  <span class="kicker">Estudo conceitual</span>
+  <h1 style="font-size:clamp(26px,3vw,42px)" id="rTitulo">Sua centralidade</h1>
+  <div class="kpis" id="kpis"></div>
+  <div class="grid2">
+    <div><h2 class="kicker" style="margin-bottom:6px">Programa de usos</h2><table id="tab"></table></div>
+    <div><h2 class="kicker" style="margin-bottom:6px">Metas do programa (do livro)</h2><ul class="metas" id="metas"></ul></div>
+  </div>
+  <p class="nota" id="hipoteses"></p>
+
+  <div class="atelie" id="atelie">
+    <div class="atelie-t">
+      <span class="kicker">Ateliê de conceito</span>
+      <h2 class="atelie-h">A ilustração do seu parque</h2>
+      <p>Uma prancha com a maquete do seu terreno em escala real: quadras e ruas com calçada, faixa e carros, prédios com janela por andar, bosques com ipês, lago, campos — e o detalhe da praça do CONVIVA de perto. Prefere o traço do livro? Troque para aquarela.</p>
+      <div class="atelie-b">
+        <button class="btn" id="cGerar">Criar imagem conceito</button>
+        <button class="btn s" id="cVista" disabled>Outra vista ↻</button>
+        <button class="btn s" id="cLuz" disabled>Entardecer ☀︎</button>
+        <button class="btn s" id="cEstilo" disabled>Estilo aquarela ✎</button>
+        <button class="btn s" id="cBaixar" disabled>Baixar prancha (PNG)</button>
+        <button class="btn s" id="cIlu" disabled>Baixar só a ilustração</button>
+      </div>
+      <div class="msg" id="msgConc" aria-live="polite"></div>
+    </div>
+    <figure class="atelie-f" id="atelieF"><div class="atelie-vazio">A prancha aparece aqui.</div></figure>
+  </div>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.js"></script>
+<script src="https://unpkg.com/dxf-parser@1.1.2/dist/dxf-parser.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="cadastro.js"></script>
+<script src="conceito-real.js"></script>
+<script src="conceito.js"></script>
+<script src="terreno.js"></script>
+</body>
+</html>

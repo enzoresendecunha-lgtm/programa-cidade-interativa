@@ -1,0 +1,185 @@
+<!doctype html>
+<!-- atlas-migrator:skip — leitor de páginas estáticas (imagens do livro) com virada em CSS 3D; não busca dado de servidor. -->
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ler o livro · Cidade Interativa</title>
+<meta name="description" content="Leia “Cidade Interativa — Organização Urbana como Ferramenta de Gestão”, de Humberto Moreira, direto no navegador.">
+<meta name="theme-color" content="#1d140c">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--papel:#f4ecdd;--papel-2:#ede1cb;--tinta:#3b2615;--tinta-2:#6b4a30;--corten:#8a4320;--ipe:#e3a913;--linha:rgba(59,38,21,.16);
+  --mesa:#21170e;--mesa-2:#2c1f13;--claro:#f1e4cc;color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:radial-gradient(ellipse at 50% 30%,var(--mesa-2),var(--mesa) 70%);color:var(--claro);font-family:"Cormorant Garamond",Georgia,serif;overflow:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.top{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;gap:16px;padding:12px clamp(12px,3vw,32px);background:linear-gradient(rgba(33,23,14,.95),rgba(33,23,14,0));font-family:"Cinzel",serif;font-size:12px;letter-spacing:.3em}
+.top a.v{text-decoration:none;opacity:.8}
+.top .t{flex:1;text-align:center;opacity:.85}
+.top .t b{color:var(--ipe);font-weight:600}
+.top button,.dock button{background:rgba(241,228,204,.06);border:1px solid rgba(241,228,204,.18);color:var(--claro);border-radius:99px;height:36px;min-width:36px;padding:0 12px;cursor:pointer;font:500 12px Inter,system-ui,sans-serif;letter-spacing:.04em}
+.top button:hover,.dock button:hover{background:rgba(241,228,204,.14)}
+.stage{position:fixed;inset:64px 0 118px;display:grid;place-items:center;perspective:2600px}
+.book{position:relative;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.2,.8,.2,1)}
+.book .lado{position:absolute;top:0;bottom:0;width:50%;background:var(--papel) center/cover no-repeat;box-shadow:0 30px 60px -20px rgba(0,0,0,.7)}
+.book.single .lado{width:100%}
+.book .esq{left:0;border-radius:4px 0 0 4px}
+.book .dir{right:0;border-radius:0 4px 4px 0}
+.book.single .dir{display:none}
+.book .esq::after,.book .dir::after{content:"";position:absolute;inset:0;pointer-events:none}
+.book .esq::after{background:linear-gradient(90deg,rgba(0,0,0,0) 85%,rgba(0,0,0,.22))}
+.book .dir::after{background:linear-gradient(90deg,rgba(0,0,0,.22),rgba(0,0,0,0) 15%)}
+.book.single .esq::after{display:none}
+.vazio{background:transparent!important;box-shadow:none!important}
+/* folha que vira */
+.folha{position:absolute;top:0;bottom:0;width:50%;transform-style:preserve-3d;transition:transform .75s cubic-bezier(.45,.05,.25,1);z-index:5}
+.folha .f,.folha .b{position:absolute;inset:0;backface-visibility:hidden;background:var(--papel) center/cover no-repeat}
+.folha .b{transform:rotateY(180deg)}
+.folha.vai{right:0;transform-origin:0 50%}
+.folha.vai.virando{transform:rotateY(-180deg)}
+.folha.volta{left:0;transform-origin:100% 50%}
+.folha.volta.virando{transform:rotateY(180deg)}
+.folha .sombra{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(0,0,0,.25),transparent 40%);opacity:0;transition:opacity .75s}
+.folha.virando .sombra{opacity:1}
+/* cadeado */
+.trava{position:absolute;inset:0;display:grid;place-items:center;background:linear-gradient(rgba(244,236,221,.2),rgba(244,236,221,.92) 40%);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);color:var(--tinta);text-align:center;padding:24px;border-radius:inherit}
+.trava h4{font-family:"Cinzel",serif;color:var(--corten);letter-spacing:.08em;font-size:clamp(18px,2vw,26px);margin:10px 0}
+.trava p{font-size:17px;color:var(--tinta-2);max-width:320px;margin:0 auto 18px}
+.trava button{font-family:"Cinzel",serif;letter-spacing:.2em;font-size:12px;padding:13px 22px;border-radius:99px;border:0;background:var(--corten);color:#fbf1df;cursor:pointer}
+.nav-l,.nav-r{position:fixed;top:50%;transform:translateY(-50%);z-index:10;width:48px;height:48px;border-radius:50%;border:1px solid rgba(241,228,204,.2);background:rgba(33,23,14,.6);color:var(--claro);font-size:20px;cursor:pointer}
+.nav-l{left:clamp(6px,2vw,24px)}.nav-r{right:clamp(6px,2vw,24px)}
+.nav-l:disabled,.nav-r:disabled{opacity:.25;cursor:default}
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:10px clamp(12px,3vw,32px) 14px;background:linear-gradient(rgba(33,23,14,0),rgba(33,23,14,.96) 35%)}
+.dock .linha{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.dock input[type=range]{flex:1;accent-color:var(--ipe)}
+.dock .pg{font:500 12px Inter,system-ui,sans-serif;min-width:82px;text-align:right;opacity:.85}
+.thumbs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:thin;padding-bottom:4px}
+.thumbs button{flex:0 0 auto;width:38px;height:54px;border-radius:3px;padding:0;border:1px solid transparent;background:#3a2a1b center/cover no-repeat;opacity:.55;cursor:pointer;position:relative}
+.thumbs button.on{opacity:1;border-color:var(--ipe)}
+.thumbs button.lk::after{content:"🔒";position:absolute;inset:0;display:grid;place-items:center;font-size:11px;background:rgba(33,23,14,.5)}
+.sum{position:fixed;top:56px;left:clamp(12px,3vw,32px);z-index:30;width:min(320px,calc(100vw - 24px));max-height:calc(100vh - 200px);overflow:auto;background:rgba(33,23,14,.97);border:1px solid rgba(241,228,204,.16);border-radius:12px;padding:10px;display:none}
+.sum.on{display:block}
+.sum button{display:flex;justify-content:space-between;width:100%;text-align:left;background:none;border:0;color:var(--claro);padding:10px 12px;border-radius:8px;font:17px "Cormorant Garamond",serif;cursor:pointer}
+.sum button:hover{background:rgba(241,228,204,.08)}
+.sum button span{font:12px Inter,system-ui,sans-serif;opacity:.6}
+.zoom{position:fixed;inset:0;z-index:40;background:rgba(15,10,6,.96);overflow:auto;display:none;cursor:zoom-out}
+.zoom.on{display:block}
+.zoom img{display:block;width:min(1200px,100%);margin:0 auto;padding:16px 0}
+@media (max-width:760px){.top .t{display:none}.stage{inset:58px 0 112px}.nav-l,.nav-r{display:none}}
+@media (prefers-reduced-motion:reduce){.folha{transition:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="v" id="ciBackToSite" href="./index.html#livro">← Voltar ao site</a>
+  <button id="bSum" aria-expanded="false">Sumário</button>
+  <div class="t">Humberto Moreira · <b>Cidade Interativa</b></div>
+  <button id="bZoom" title="Ampliar página">Ampliar</button>
+  <button id="bFull" title="Tela cheia">⤢</button>
+</header>
+<nav class="sum" id="sum" aria-label="Sumário"></nav>
+
+<main class="stage" id="stage" aria-live="polite">
+  <div class="book" id="book"><div class="lado esq" id="esq"></div><div class="lado dir" id="dir"></div></div>
+</main>
+<button class="nav-l" id="ant" aria-label="Página anterior">‹</button>
+<button class="nav-r" id="prox" aria-label="Próxima página">›</button>
+
+<footer class="dock">
+  <div class="linha"><input type="range" id="slider" min="1" max="64" value="1" aria-label="Ir para a página"><span class="pg" id="pg"></span></div>
+  <div class="thumbs" id="thumbs"></div>
+</footer>
+<div class="zoom" id="zoom"><img id="zoomImg" alt=""></div>
+
+<script src="cadastro.js"></script>
+<script>
+const TOTAL = 64, LIVRE = 12;    // As primeiras 12 páginas são abertas.
+                                // As demais moram fora da pasta pública: a API só as entrega com a chave do cadastro.
+const SUM = [['Capa',1],['Prefácio',4],['Sumário',6],['O Oceano do Policentrismo Interativo',7],['Da cidade monocêntrica à malha colaborativa',13],
+  ['Os 7 Núcleos Vocacionais',17],['CONECTA — Parque Tecnológico',18],['INTEGRA — Parque Interativo',24],['PRODUZA — Parque Indústria',30],
+  ['ENCONTRA — Consumo e Diversão',36],['CONTEMPLA — Parque Ecológico',42],['DIVIRTA — Lazer e Esporte',48],['CONVIVA — o coração',53],
+  ['CONVIVA — Parque Intergeracional',54],['Conclusão',60],['Quem caminha com você',61],['O autor',63]];
+const nn = n => String(n).padStart(2,'0');
+const src = n => { if (n <= LIVRE) return `livro/p-${nn(n)}.webp`; const c = CICadastro.livro(); return c ? `/api/ci/livro/p-${nn(n)}.webp?p=${encodeURIComponent(c.p)}&k=${c.k}` : `livro/p-${nn(LIVRE)}.webp`; };
+const liberado = n => n <= LIVRE || !!CICadastro.livro();
+const $ = id => document.getElementById(id);
+const book=$('book'), esq=$('esq'), dir=$('dir');
+let single = innerWidth < 760 || innerWidth/innerHeight < 1.05, pag = 1, ocupado = false;
+
+// spread: capa sozinha à direita; depois pares (2-3, 4-5, ...)
+const spreadDe = n => single ? [n] : (n === 1 ? [0,1] : (n % 2 === 0 ? [n, n+1] : [n-1, n]));
+function pinta(el, n){
+  el.innerHTML=''; el.classList.toggle('vazio', !(n>=1 && n<=TOTAL));
+  if(!(n>=1 && n<=TOTAL)){ el.style.backgroundImage='none'; return; }
+  if(liberado(n)){ el.style.backgroundImage=`url(${src(n)})`; el.setAttribute('aria-label',`Página ${n}`); }
+  else {
+    el.style.backgroundImage=`url(${'livro/previa-13.webp'})`;
+    const t=document.createElement('div'); t.className='trava';
+    t.innerHTML='<div><div style="font-size:30px">🔒</div><h4>Você leu a introdução</h4><p>O livro continua com O Centro Interativo e suas Centralidades Planejadas e os 7 Núcleos Vocacionais. As páginas a partir da '+(LIVRE+1)+' são liberadas com um cadastro rápido e gratuito.</p><button>Liberar o livro</button></div>';
+    t.querySelector('button').onclick=()=>CICadastro.abrir({motivo:'livro',aoConcluir:render});
+    el.appendChild(t);
+  }
+}
+function dimensiona(){
+  const r=$('stage').getBoundingClientRect(), W=r.width-32, Hh=r.height, k=single?745/1053:1490/1053;
+  const w=Math.min(W, Hh*k); book.style.width=w+'px'; book.style.height=(w/k)+'px';
+}
+function render(){
+  book.classList.toggle('single', single); dimensiona();
+  const s = spreadDe(pag);
+  if(single){ pinta(esq, s[0]); } else { pinta(esq, s[0]); pinta(dir, s[1]); }
+  const fim = single ? pag : Math.max(...s.filter(x=>x>=1 && x<=TOTAL));
+  $('pg').textContent = single ? `${pag} / ${TOTAL}` : `${Math.max(1,s[0])}–${Math.min(TOTAL,fim)} / ${TOTAL}`;
+  $('slider').value = pag;
+  $('ant').disabled = pag <= 1; $('prox').disabled = fim >= TOTAL;
+  document.querySelectorAll('#thumbs button').forEach((b,i)=>{ const n=i+1; b.classList.toggle('on', s.includes(n)); b.classList.toggle('lk', !liberado(n)); b.style.backgroundImage=`url(${src(liberado(n)?n:1)})`; });
+  const on=document.querySelector('#thumbs button.on'); if(on) on.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
+  try{ history.replaceState(null,'',`#p${pag}`); localStorage.setItem('ci-livro-pag',pag); }catch(e){}
+  // pré-carrega o próximo par
+  [1,2,3].forEach(k=>{ const n=(single?pag:spreadDe(pag)[1])+k; if(n<=TOTAL && liberado(n)){ const i=new Image(); i.src=src(n);} });
+}
+function alvo(d){ const s=spreadDe(pag); if(single) return pag+d; return d>0 ? (s[1]+1) : Math.max(1, s[0]-2 < 1 ? 1 : s[0]-2); }
+function ir(n, animar=true){
+  n = Math.max(1, Math.min(TOTAL, n));
+  if(single || !animar || ocupado || matchMedia('(prefers-reduced-motion: reduce)').matches){ pag = n; render(); return; }
+  const de = spreadDe(pag), para = spreadDe(n); if(de[0]===para[0]){ return; }
+  const frente = n > pag; ocupado = true;
+  const f=document.createElement('div'); f.className='folha '+(frente?'vai':'volta');
+  const cara = frente ? de[1] : de[0], costas = frente ? para[0] : para[1];
+  f.innerHTML='<div class="f"></div><div class="b"></div><div class="sombra"></div>';
+  const ff=f.querySelector('.f'), fb=f.querySelector('.b');
+  [ [ff,cara],[fb,costas] ].forEach(([el,p])=>{ if(p>=1&&p<=TOTAL){ el.style.backgroundImage=`url(${(liberado(p)?src(p):'livro/previa-13.webp')})`; if(!liberado(p)) el.style.filter='blur(6px)'; } else el.style.background='transparent'; });
+  book.appendChild(f);
+  // embaixo da folha já aparece o destino
+  if(frente) pinta(dir, para[1]); else pinta(esq, para[0]);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>f.classList.add('virando')));
+  setTimeout(()=>{ f.remove(); pag = n; ocupado=false; render(); }, 760);
+}
+$('prox').onclick=()=>ir(alvo(1)); $('ant').onclick=()=>ir(alvo(-1));
+$('slider').oninput=e=>{ pag=+e.target.value; render(); };
+addEventListener('keydown',e=>{ if(e.key==='ArrowRight'||e.key===' ') { e.preventDefault(); ir(alvo(1)); } if(e.key==='ArrowLeft') ir(alvo(-1)); if(e.key==='Escape'){ $('zoom').classList.remove('on'); $('sum').classList.remove('on'); } });
+let x0=null; $('stage').addEventListener('touchstart',e=>x0=e.touches[0].clientX,{passive:true});
+$('stage').addEventListener('touchend',e=>{ if(x0===null)return; const dx=e.changedTouches[0].clientX-x0; if(Math.abs(dx)>40) ir(alvo(dx<0?1:-1)); x0=null; });
+$('stage').addEventListener('click',e=>{ if(e.target.closest('.trava'))return; const r=book.getBoundingClientRect(); if(e.clientX>r.left+r.width/2) ir(alvo(1)); else ir(alvo(-1)); });
+// miniaturas e sumário
+for(let n=1;n<=TOTAL;n++){ const b=document.createElement('button'); b.title='Página '+n; b.setAttribute('aria-label','Página '+n); b.onclick=()=>ir(n,false); $('thumbs').appendChild(b); }
+SUM.forEach(([t,n])=>{ const b=document.createElement('button'); b.innerHTML=`${t}<span>${n}${n>LIVRE&&!CICadastro.livro()?' 🔒':''}</span>`; b.onclick=()=>{ $('sum').classList.remove('on'); ir(n,false); }; $('sum').appendChild(b); });
+$('bSum').onclick=()=>{ const on=$('sum').classList.toggle('on'); $('bSum').setAttribute('aria-expanded',on); };
+$('bZoom').onclick=()=>{ const n=single?pag:Math.max(1,spreadDe(pag)[0]||1); if(!liberado(n)) return; $('zoomImg').src=src(n); $('zoom').classList.add('on'); };
+$('zoom').onclick=()=>$('zoom').classList.remove('on');
+$('bFull').onclick=()=>{ document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen(); };
+addEventListener('resize',()=>{ const s=innerWidth<760||innerWidth/innerHeight<1.05; if(s!==single){ single=s; render(); } else dimensiona(); });
+// começa onde parou (ou no #pN do link)
+const h=location.hash.match(/^#p(\d+)/); let salvo=1; try{ salvo=+(localStorage.getItem('ci-livro-pag')||1); }catch(e){} let ini=h?+h[1]:salvo; pag=Math.max(1,Math.min(TOTAL,ini||1));
+render();
+addEventListener('hashchange',()=>{ const m=location.hash.match(/^#p(\d+)/); if(m && +m[1]!==pag) ir(+m[1],false); });
+</script>
+<script>
+ document.getElementById('ciBackToSite').addEventListener('click',e=>{if(e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;try{const key='ci.book.return';const saved=JSON.parse(sessionStorage.getItem(key));if(!saved||!saved.url)return;const target=new URL(saved.url,location.href);if(target.origin!==location.origin)return;sessionStorage.setItem(key+'.restore','1');e.preventDefault();location.assign(target.href);}catch(err){}});
+</script>
+</body>
+</html>
