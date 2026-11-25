@@ -465,4 +465,32 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
 #nucleos .htrack{display:block;width:100%;height:auto;transform:none!important;will-change:auto}
 #nucleos .panel{width:100%;height:auto;min-height:100vh;scroll-margin-top:85px}
 </style>
-<style>body.exclusivo{overflow-x:hidden}.exclusivo .panel{width:100%;height:auto;min-height:100vh;min-height:100dvh;padding:clamp(24px,5vw,80px);overflow:visible}.exclusivo .stage{height:auto;padding-top:0}.exclusivo .aerial{max-height:55vh}.exclusivo .panel .copy{min-width:0}@media(max-width:860px){.exclusivo .panel{padding:32px 20px}.exclusivo .stage{height:auto}.exclusivo .metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}</style></head><body class="exclusivo"><main class="panel"><div class="stage"><img class="nucleo-logo" src="img/logo-contempla.png" alt="Parque Ecológico — CONTEMPLA"><img class="aerial" src="img/contempla.webp" alt="Ilustração aérea do Parque Ecológico CONTEMPLA"></div><div class="copy"><span class="kicker left">Meio Ambiente, Educação Ambiental e Clima</span><p class="tag">“O céu aberto da natureza e da consciência.”</p><p>Bairros que vivem dentro da natureza. Cidades com menos de 15% de cobertura vegetal têm ilhas de calor 7 °C maiores — preservar é mais barato que recuperar.</p><p><em>A natureza ensina, o verde cura, a água conecta. E todos fazem parte do ecossistema.</em></p><div class="ancora"><b>Negócio âncora</b>Parque Ecológico + Centro de Educação Ambiental</div><div class="metrics"><div class="metric"><div class="v">+20%</div><div class="l">cobertura vegetal</div></div><div class="metric"><div class="v">−10°C</div><div class="l">sensação térmica</div></div><div class="metric"><div class="v">+30%</div><div class="l">permeabilidade do solo</div></div></div><a class="volte-oceano" href="index.html#oceano">← Volte ao Oceano</a></div></main></body></html>
+<style>body.exclusivo{overflow-x:hidden}.exclusivo .panel{width:100%;height:auto;min-height:100vh;min-height:100dvh;padding:clamp(24px,5vw,80px);overflow:visible}.exclusivo .stage{height:auto;padding-top:0}.exclusivo .aerial{max-height:55vh}.exclusivo .panel .copy{min-width:0}@media(max-width:860px){.exclusivo .panel{padding:32px 20px}.exclusivo .stage{height:auto}.exclusivo .metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}</style><style>
+.nucleo-mobile-head{display:none}
+@media(max-width:860px){
+html:has(body.exclusivo){height:100%;color-scheme:light}
+body.exclusivo{--papel:#f4ecdd;--papel-2:#ede1cb;--tinta:#3b2615;--tinta-2:#6b4a30;--tinta-3:#76563d;--corten:#8a4320;--linha:rgba(59,38,21,.16);height:100%;overflow:auto}
+body.exclusivo::before{opacity:.35;mix-blend-mode:multiply}
+.exclusivo .panel{height:100vh;height:100dvh;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;align-items:stretch;gap:clamp(5px,1.1dvh,12px);padding: max(8px,env(safe-area-inset-top)) 14px max(10px,env(safe-area-inset-bottom));overflow:visible}
+.nucleo-mobile-head{display:grid;grid-template-columns:1fr;position:relative;text-align:center;gap:3px}
+.nucleo-mobile-head a{justify-self:start;font:600 11px/1.2 var(--sans);color:var(--corten);text-decoration:none;padding:8px 0;min-height:32px;display:flex;align-items:center}
+.nucleo-mobile-head h1{font-size:clamp(22px,6vw,32px);letter-spacing:.09em;margin:0}
+.nucleo-mobile-head small{font:500 10px/1.2 var(--sans);letter-spacing:.08em;color:var(--tinta-2);text-transform:uppercase}
+.exclusivo .stage{height:100%;min-height:0;padding:0;display:flex;justify-content:center;align-items:center}
+.exclusivo .stage .nucleo-logo{display:none}
+.exclusivo .stage .aerial{width:100%;height:100%;min-height:0;max-height:none;object-fit:contain;filter:none}
+.exclusivo .panel .copy{display:flex;flex-direction:column;gap:clamp(4px,.85dvh,9px);align-self:end}
+.exclusivo .copy .kicker{font:600 clamp(9px,2.6vw,12px)/1.25 var(--sans);letter-spacing:.08em;display:block;text-align:center}
+.exclusivo .copy .kicker::after{display:none}
+.exclusivo .copy .tag{font-size:clamp(17px,4.6vw,23px);line-height:1.12;margin:0;text-align:center}
+.exclusivo .copy p{font-size:clamp(14px,3.7vw,18px);line-height:1.22;margin:0}
+.exclusivo .copy .ancora{font-size:clamp(10px,2.9vw,13px);line-height:1.25;padding:6px 9px;margin:0;letter-spacing:0}
+.exclusivo .copy .ancora b{font-size:10px;margin:0 0 2px;letter-spacing:.1em}
+.exclusivo .metrics{gap:5px;grid-template-columns:repeat(3,minmax(0,1fr))}
+.exclusivo .metric{padding:6px 4px;text-align:center;min-width:0}
+.exclusivo .metric .v{font-size:clamp(18px,5vw,25px)}
+.exclusivo .metric .l{font-size:clamp(9px,2.5vw,11px);line-height:1.15;margin-top:3px;overflow-wrap:anywhere}
+.exclusivo .copy .volte-oceano{display:none}
+}
+@media(max-width:860px) and (max-height:650px){.exclusivo .panel{gap:4px;padding-top:4px;padding-bottom:5px}.exclusivo .copy{gap:4px}.exclusivo .copy p{font-size:13px}.exclusivo .copy .tag{font-size:16px}.nucleo-mobile-head a{min-height:26px;padding:4px 0}.nucleo-mobile-head h1{font-size:21px}.exclusivo .metric{padding:4px 2px}}
+</style></head><body class="exclusivo"><main class="panel"><header class="nucleo-mobile-head"><a href="index.html#oceano">← Retornar ao Oceano</a><h1>CONTEMPLA</h1><small>Parque Ecológico</small></header><div class="stage"><img class="nucleo-logo" src="img/logo-contempla.png" alt="Parque Ecológico — CONTEMPLA"><img class="aerial" src="img/contempla.webp" alt="Ilustração aérea do Parque Ecológico CONTEMPLA"></div><div class="copy"><span class="kicker left">Meio Ambiente, Educação Ambiental e Clima</span><p class="tag">“O céu aberto da natureza e da consciência.”</p><p>Bairros que vivem dentro da natureza. Cidades com menos de 15% de cobertura vegetal têm ilhas de calor 7 °C maiores — preservar é mais barato que recuperar.</p><p><em>A natureza ensina, o verde cura, a água conecta. E todos fazem parte do ecossistema.</em></p><div class="ancora"><b>Negócio âncora</b>Parque Ecológico + Centro de Educação Ambiental</div><div class="metrics"><div class="metric"><div class="v">+20%</div><div class="l">cobertura vegetal</div></div><div class="metric"><div class="v">−10°C</div><div class="l">sensação térmica</div></div><div class="metric"><div class="v">+30%</div><div class="l">permeabilidade do solo</div></div></div><a class="volte-oceano" href="index.html#oceano">← Volte ao Oceano</a></div></main></body></html>
