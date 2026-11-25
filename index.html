@@ -137,6 +137,15 @@ p.lead{font-size:clamp(22px,2vw,30px);line-height:1.45;color:var(--tinta-2);font
 @media (max-width:860px){.prefacio .grid{grid-template-columns:1fr}}
 
 /* ---------- oceano 3D ---------- */
+@media(max-width:860px){
+  #oceano{height:100vh;height:100svh;scroll-margin-top:65px}
+  #oceano .oceano-pin{position:relative;height:100%;}
+  #ocean{touch-action:pan-y}
+  #oceano .oceano-instrucao{top:clamp(65px,10svh,90px);font-size:clamp(18px,5vw,25px)}
+  #oceano .oceano-legend{display:block;bottom:5%;left:12px;right:12px;text-align:center;letter-spacing:.08em;font-size:11px;pointer-events:none}
+  #oceano .ilabel{padding:3px 6px;border-radius:6px;transition:opacity .15s}
+  #oceano .ilabel img{display:block;width:clamp(75px,25vw,120px);height:auto;max-height:38px;object-fit:contain}
+}
 .oceano{height:420vh;background:linear-gradient(var(--papel),var(--papel-2) 20%,var(--papel-2) 80%,var(--papel))}
 .oceano-pin{position:sticky;top:0;height:100vh;overflow:hidden}
 #ocean{position:absolute;inset:0;width:100%;height:100%;display:block}
@@ -782,7 +791,7 @@ main section[id]{scroll-margin-top:78px}
     <div id="labels"></div>
     <h2 class="oceano-instrucao">Clique e conheça cada Núcleo Vocacional</h2>
 
-    <div class="oceano-legend">arraste para girar · 7 centralidades · 1 rede</div>
+    <div class="oceano-legend">arraste para girar · toque para conhecer</div>
   </div>
 </section>
 
@@ -1027,21 +1036,22 @@ if(temGSAP && !REDUZ){
 
   // rótulos HTML que acompanham as ilhas
   const lab=document.getElementById('labels');
-  islands.forEach(g=>{const d=document.createElement('div');d.className='ilabel';d.innerHTML=`<b>${g.userData.n.nome}</b> · ${g.userData.n.parque.replace('Parque ','')}`;lab.appendChild(d);g.userData.lab=d});
+  islands.forEach(g=>{const d=document.createElement('div');d.className='ilabel';d.innerHTML=`<b>${g.userData.n.nome}</b> · ${g.userData.n.parque.replace('Parque ','')}`;if(MOBILE){const logo=document.createElement('img');logo.src='img/logo-'+g.userData.n.id+'.png';logo.alt=g.userData.n.nome;d.replaceChildren(logo)}lab.appendChild(d);g.userData.lab=d});
 
   // estado guiado pela rolagem
   const S={prog:0,drag:0,dragV:0,hover:-1};
   
-  if(typeof ScrollTrigger!=='undefined' && !REDUZ){
+  if(MOBILE){S.prog=REDUZ?1:0;} else if(typeof ScrollTrigger!=='undefined' && !REDUZ){
     ScrollTrigger.create({trigger:'#oceano',start:'top top',end:'bottom bottom',scrub:true,onUpdate:s=>S.prog=s.progress});
   } else { S.prog=.5;  }
 
   // arrastar para girar
-  let down=false,lx=0;
-  cv.addEventListener('pointerdown',e=>{down=true;lx=e.clientX;cv.setPointerCapture(e.pointerId)});
+  let down=false,lx=0,startX=0,startY=0,moved=false;
+  cv.addEventListener('pointerdown',e=>{down=true;lx=startX=e.clientX;startY=e.clientY;moved=false;S.dragV=0;cv.setPointerCapture(e.pointerId)});
   cv.addEventListener('pointerup',()=>down=false);
+  cv.addEventListener('pointercancel',()=>{down=false;moved=true;S.dragV=0});
   cv.addEventListener('pointermove',e=>{
-    if(down){S.dragV+=(e.clientX-lx)*.004;lx=e.clientX}
+    if(down){if(Math.hypot(e.clientX-startX,e.clientY-startY)>8)moved=true;if(!MOBILE||S.prog>=1){S.dragV=(e.clientX-lx)*.003; }lx=e.clientX}
     const r=cv.getBoundingClientRect(); mouse.x=(e.clientX-r.left)/r.width*2-1; mouse.y=-(e.clientY-r.top)/r.height*2+1;
   });
   const mouse=new THREE.Vector2(9,9), ray=new THREE.Raycaster();
@@ -1054,18 +1064,20 @@ if(temGSAP && !REDUZ){
   addEventListener('resize',resize); resize();
   addEventListener('ci-tema',()=>{scene.fog.color=tintaFog()});
 
-  let visivel=false;
-  new IntersectionObserver(es=>visivel=es[0].isIntersecting).observe(cv);
+  let visivel=false, started=false, elapsed=0, lastFrame=null;
+  new IntersectionObserver(es=>{visivel=es[0].isIntersecting;if(es[0].intersectionRatio>=.35)started=true;if(!visivel)lastFrame=null;},{threshold:[0,.35]}).observe(cv);
   const clock=new THREE.Clock(), v=new THREE.Vector3();
   function loop(){
     requestAnimationFrame(loop);
     if(!visivel) return;
-    const t=clock.getElapsedTime(), p=S.prog;
+    const t=clock.getElapsedTime();
+    if(MOBILE&&started&&S.prog<1){elapsed+=lastFrame===null?0:Math.min(.05,t-lastFrame);const q=Math.min(1,elapsed/2.6);S.prog=q*q*(3-2*q);}
+    lastFrame=t; const p=S.prog;
     oceanMat.uniforms.t.value=t;
     // câmera: de cima (aglomeração) → órbita baixa (ondas) → mergulho (núcleo)
     S.drag+=S.dragV; S.dragV*=.92;
     const orbit=t*.04+p*Math.PI*1.2+S.drag;
-    const dist=(THREE.MathUtils.lerp(26,13,Math.min(1,p*1.6)) - (p>.75?(p-.75)*14:0))*(MOBILE?1.18:1);
+    const dist=MOBILE?THREE.MathUtils.lerp(30,15,p): (THREE.MathUtils.lerp(26,13,Math.min(1,p*1.6)) - (p>.75?(p-.75)*14:0));
     const hgt=THREE.MathUtils.lerp(22,6.5,Math.min(1,p*1.5));
     cam.position.set(Math.cos(orbit)*dist,hgt,Math.sin(orbit)*dist);
     cam.lookAt(0,p>.75?1.2:.6,0);
@@ -1080,16 +1092,16 @@ if(temGSAP && !REDUZ){
     const spread=THREE.MathUtils.lerp(.35,1,Math.min(1,p*2.2));
     islands.forEach((g,i)=>{
       const a=g.userData.a;
-      const lift=(S.hover===i?.9:0);
+      const lift=(!MOBILE&&S.hover===i?.9:0);
       g.position.set(Math.cos(a)*R*spread,1+Math.sin(t*1.1+i)*.22+lift,Math.sin(a)*R*spread);
       g.lookAt(cam.position.x,g.position.y,cam.position.z);
-      const s=S.hover===i?1.18:1; g.scale.lerp(v.set(s,s,s),.12);
+      const s=MOBILE?THREE.MathUtils.lerp(.7,1.28,p):(S.hover===i?1.18:1); g.scale.lerp(v.set(s,s,s),.12);
       const b=g.userData.bead, k=((t*.25+b.userData.off)%1); b.position.copy(b.userData.curve.getPoint(k));
       // rótulo
-      v.copy(g.position).setY(g.position.y+1.6).project(cam);
+      v.copy(g.position).setY(g.position.y+(MOBILE?2.0:1.6)).project(cam);
       const L=g.userData.lab, x=(v.x*.5+.5)*cv.clientWidth, y=(-v.y*.5+.5)*cv.clientHeight;
       L.style.transform=`translate(${x}px,${y}px) translate(-50%,-50%)`;
-      L.style.opacity=(p>.18 && v.z<1)?(S.hover===i?1:.85):0;
+      L.style.opacity=(p>.18 && v.z<1 && (!MOBILE||(Math.abs(v.x)<.9&&Math.abs(v.y)<.72)))?(MOBILE?1:(S.hover===i?1:.85)):0;
     });
     // partículas convergem para as centralidades conforme a rolagem
     const arr=pg.attributes.position.array;
@@ -1108,7 +1120,7 @@ if(temGSAP && !REDUZ){
   }
   loop();
   // clique na ilha → vai ao painel do núcleo
-  cv.addEventListener('click',()=>{ if(S.hover>=0){ abrirNucleo(NUCLEOS[S.hover].id); }});
+  cv.addEventListener('click',e=>{if(moved||(MOBILE&&S.prog<1))return;const r=cv.getBoundingClientRect();mouse.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(mouse,cam);const hit=ray.intersectObjects(islands.map(g=>g.userData.mesh))[0];if(hit){const g=islands.find(g=>g.userData.mesh===hit.object);abrirNucleo(g.userData.n.id);}});
 })();
 
 /* ---------- FORÇAS: simulação atração × expansão ---------- */
