@@ -504,7 +504,8 @@ main section[id]{scroll-margin-top:78px}
 .ci-contact{padding:clamp(48px,7vw,90px) 0;border-top:1px solid var(--linha);background:var(--papel-2);text-align:center}.ci-contact h2{font-size:clamp(28px,4vw,48px);margin:0 0 20px}.ci-contact p{max-width:650px;margin:0 auto 28px;color:var(--tinta-2)}.ci-contact-links{display:flex;justify-content:center;gap:16px;flex-wrap:wrap}.ci-contact-links a{display:inline-flex;align-items:center;gap:10px;padding:13px 22px;border:1px solid var(--corten);border-radius:40px;color:var(--corten);text-decoration:none;font-family:var(--sans);font-size:14px;transition:background .2s,color .2s}.ci-contact-links a:hover,.ci-contact-links a:focus-visible{background:var(--corten);color:var(--papel)}.ci-contact-links svg{width:20px;height:20px;flex:none}@media(max-width:600px){.ci-contact-links{flex-direction:column;align-items:center}}
 </style><style>
 #ci-mobile-intro{display:none}
-@media(max-width:760px){
+/* Intro do livro abrindo: agora em mobile E desktop (antes só até 760px) */
+@media all{
 #loader{display:none!important}
 #ci-mobile-intro.ci-running{display:grid;position:fixed;inset:0;z-index:9999;place-items:center;background:#f4ecdd;overflow:hidden;isolation:isolate;animation:ciFade 6.5s both;touch-action:none}
 #ci-mobile-intro .ci-scene{position:relative;width:min(64vw,36dvh);aspect-ratio:522/855;perspective:1000px;animation:ciApproach 6.5s linear both;will-change:transform}
@@ -599,7 +600,7 @@ main section[id]{scroll-margin-top:78px}
 <body class="no-js">
 <div id="ci-mobile-intro" aria-hidden="true"><div class="ci-scene"><img class="ci-original" src="img/livro-clicavel.png" alt="" fetchpriority="high"><div class="ci-book"><div class="ci-base"><img src="livro/p-12.webp" alt=""></div><div class="ci-page" style="--delay:4.090s;--duration:0.48s;z-index:9"><img src="livro/p-11.webp" alt=""><div class="ci-back"></div></div><div class="ci-page" style="--delay:3.860s;--duration:0.48s;z-index:10"><img src="livro/p-10.webp" alt=""><div class="ci-back"></div></div><div class="ci-page" style="--delay:3.630s;--duration:0.48s;z-index:11"><img src="livro/p-09.webp" alt=""><div class="ci-back"></div></div><div class="ci-page" style="--delay:3.400s;--duration:0.48s;z-index:12"><img src="livro/p-08.webp" alt=""><div class="ci-back"></div></div><div class="ci-page" style="--delay:3.170s;--duration:0.48s;z-index:13"><img src="livro/p-07.webp" alt=""><div class="ci-back"></div></div><div class="ci-page" style="--delay:2.940s;--duration:0.48s;z-index:14"><img src="livro/p-06.webp" alt=""><div class="ci-back"></div></div><div class="ci-page" style="--delay:2.710s;--duration:0.48s;z-index:15"><img src="livro/p-05.webp" alt=""><div class="ci-back"></div></div><div class="ci-page" style="--delay:2.480s;--duration:0.48s;z-index:16"><img src="livro/p-04.webp" alt=""><div class="ci-back"></div></div><div class="ci-page" style="--delay:2.250s;--duration:0.48s;z-index:17"><img src="livro/p-03.webp" alt=""><div class="ci-back"></div></div><div class="ci-page" style="--delay:2.020s;--duration:0.48s;z-index:18"><img src="livro/p-02.webp" alt=""><div class="ci-back"></div></div><div class="ci-cover"><img src="img/intro-capa-original.png" alt=""><div class="ci-back"></div></div></div></div></div>
 <script>
-(()=>{const el=document.getElementById('ci-mobile-intro');if(!matchMedia('(max-width:760px)').matches||matchMedia('(prefers-reduced-motion: reduce)').matches)return;try{if(sessionStorage.getItem('ci.mobile.intro.v4'))return;sessionStorage.setItem('ci.mobile.intro.v4','1')}catch(e){};if(location.hash)return;el.classList.add('ci-running');const finish=()=>el.remove();el.addEventListener('animationend',e=>{if(e.target===el)finish()});setTimeout(finish,6800);window.addEventListener('pageshow',e=>{if(e.persisted)finish()});})();
+(()=>{const el=document.getElementById('ci-mobile-intro');if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;try{if(sessionStorage.getItem('ci.mobile.intro.v4'))return;sessionStorage.setItem('ci.mobile.intro.v4','1')}catch(e){};if(location.hash)return;el.classList.add('ci-running');el.addEventListener('wheel',e=>{e.preventDefault();e.stopPropagation()},{passive:false});const finish=()=>el.remove();el.addEventListener('animationend',e=>{if(e.target===el)finish()});setTimeout(finish,6800);window.addEventListener('pageshow',e=>{if(e.persisted)finish()});})();
 </script>
 <div class="progress" id="progress"></div>
 
@@ -933,7 +934,7 @@ if(temGSAP && !REDUZ){
   }
 
   /* loader → entrada */
-  if(!matchMedia('(max-width:760px)').matches){
+  if(false){ /* loader de texto substituído pela intro do livro */
   const tl=gsap.timeline();
   tl.to('#loaderTxt span',{y:'0%',duration:.9,stagger:.035,ease:'expo.out'})
     .to('#loaderBar',{scaleX:1,duration:1.1,ease:'power2.inOut'},0)
