@@ -575,7 +575,27 @@ main section[id]{scroll-margin-top:78px}
  #forcas .estado{font-size:16px;line-height:1.35}
 }
 @media(min-width:861px){#forcas .estado strong{font:inherit}}
-</style></head>
+</style>
+<style>
+.mobile-programa-link,.mobile-book-title{display:none}
+@media(max-width:760px){
+ .mobile-programa-link{display:block;text-align:center;background:var(--papel);padding:22px 16px 12px}
+ .mobile-programa-link a{display:inline-block;font:500 11px var(--sans);letter-spacing:.16em;text-transform:uppercase;text-decoration:none;color:var(--corten);border-bottom:1px solid var(--linha);padding-bottom:9px}
+ .abertura-institucional .abertura-continuar{display:none}
+ .cidade-organismo .pilares-layout{display:flex;flex-direction:column;gap:24px;align-items:stretch;text-align:center}
+ .cidade-organismo .pilares-texto{display:contents}
+ .cidade-organismo .pilares-texto h2{order:0;margin:0!important}
+ .cidade-organismo .pilares-texto .de{order:1;margin:0}
+ .cidade-organismo .pilares-texto .organismo-intro{order:2;margin:0 auto}
+ .cidade-organismo .pilares-layout .principios{order:3;text-align:left}
+ .cidade-organismo .pilares-texto blockquote{order:4;margin:0}
+ .mobile-book-title{display:block;text-align:center;font-size:clamp(25px,3vw,42px);margin:0 auto 24px}
+ .book-description h2{display:none}
+ .book-presentation{grid-template-columns:1fr;gap:28px}
+ .book-description{text-align:center}
+}
+</style>
+</head>
 <body class="no-js">
 <div id="ci-mobile-intro" aria-hidden="true"><div class="ci-scene"><img class="ci-original" src="img/livro-clicavel.png" alt="" fetchpriority="high"><div class="ci-book"><div class="ci-base"><img src="livro/p-12.webp" alt=""></div><div class="ci-page" style="--delay:4.090s;--duration:0.48s;z-index:9"><img src="livro/p-11.webp" alt=""><div class="ci-back"></div></div><div class="ci-page" style="--delay:3.860s;--duration:0.48s;z-index:10"><img src="livro/p-10.webp" alt=""><div class="ci-back"></div></div><div class="ci-page" style="--delay:3.630s;--duration:0.48s;z-index:11"><img src="livro/p-09.webp" alt=""><div class="ci-back"></div></div><div class="ci-page" style="--delay:3.400s;--duration:0.48s;z-index:12"><img src="livro/p-08.webp" alt=""><div class="ci-back"></div></div><div class="ci-page" style="--delay:3.170s;--duration:0.48s;z-index:13"><img src="livro/p-07.webp" alt=""><div class="ci-back"></div></div><div class="ci-page" style="--delay:2.940s;--duration:0.48s;z-index:14"><img src="livro/p-06.webp" alt=""><div class="ci-back"></div></div><div class="ci-page" style="--delay:2.710s;--duration:0.48s;z-index:15"><img src="livro/p-05.webp" alt=""><div class="ci-back"></div></div><div class="ci-page" style="--delay:2.480s;--duration:0.48s;z-index:16"><img src="livro/p-04.webp" alt=""><div class="ci-back"></div></div><div class="ci-page" style="--delay:2.250s;--duration:0.48s;z-index:17"><img src="livro/p-03.webp" alt=""><div class="ci-back"></div></div><div class="ci-page" style="--delay:2.020s;--duration:0.48s;z-index:18"><img src="livro/p-02.webp" alt=""><div class="ci-back"></div></div><div class="ci-cover"><img src="img/intro-capa-original.png" alt=""><div class="ci-back"></div></div></div></div></div>
 <script>
@@ -612,6 +632,8 @@ main section[id]{scroll-margin-top:78px}
 <section class="capa-site" aria-label="Capa Cidade Interativa">
   <img src="img/capa-site.png" width="2048" height="1153" alt="Cidade Interativa — Organização Urbana como Ferramenta de Gestão" fetchpriority="high">
 </section>
+
+<div class="mobile-programa-link"><a href="#abertura">Conheça o programa ↓</a></div>
 
 <!-- Abertura institucional adaptada ao layout: apenas as logomarcas mantêm a arte original -->
 <section class="abertura-institucional" id="abertura" aria-label="Apresentação institucional da Cidade Interativa e do Policentrismo Interativo">
@@ -798,6 +820,7 @@ main section[id]{scroll-margin-top:78px}
 <!-- LIVRO + CTA -->
 <section class="livro" id="livro">
   <div class="wrap">
+    <h2 class="mobile-book-title">Organização urbana como ferramenta de gestão</h2>
     <div class="book-presentation"><div class="book-visual"><a href="livro.html#p1" class="book-access" id="bookAccess" aria-label="Clique no livro para ler">
       <span class="book-stage"><img class="book-cover" src="img/livro-clicavel.png" alt="Livro Cidade Interativa"><span class="open-volume" aria-hidden="true"><span class="volume-block"><img src="livro/p-03.webp" alt=""></span><span class="volume-leaf"><img src="livro/p-02.webp" alt=""></span><span class="volume-cover"><span class="volume-face"><img src="img/capa.webp" alt=""></span><span class="volume-face back"></span></span></span></span>
       
