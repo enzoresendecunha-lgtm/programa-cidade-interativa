@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://programacidadeinterativa.com.br/sitemap.xml

@@ -322,7 +322,7 @@
     // rodapé
     g.fillStyle = '#8c6d52'; g.font = '400 18px Inter';
     g.fillText('Estudo conceitual gerado pelo Laboratório do Parque — não é projeto. Zoneamento, APPs, topografia e legislação municipal não foram considerados.', 110, PH - 70);
-    g.textAlign = 'right'; g.fillText(`cidadeinterativa.org  ·  ${new Date().toLocaleDateString('pt-BR')}${opts.protocolo ? '  ·  ' + opts.protocolo : ''}`, PW - 110, PH - 70); g.textAlign = 'left';
+    g.textAlign = 'right'; g.fillText(`programacidadeinterativa.com.br  ·  ${new Date().toLocaleDateString('pt-BR')}${opts.protocolo ? '  ·  ' + opts.protocolo : ''}`, PW - 110, PH - 70); g.textAlign = 'left';
     return { png: cv.toDataURL('image/png'), jpg: cv.toDataURL('image/jpeg', 0.9) };
   }
   function espacado(g, t, x, y, esp) { for (const ch of t) { g.fillText(ch, x, y); x += g.measureText(ch).width + esp; } }
