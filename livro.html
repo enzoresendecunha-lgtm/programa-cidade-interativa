@@ -71,6 +71,8 @@ a{color:inherit}
 .zoom img{display:block;width:min(1200px,100%);margin:0 auto;padding:16px 0}
 @media (max-width:760px){.top .t{display:none}.stage{inset:58px 0 112px}.nav-l,.nav-r{display:none}}
 @media (prefers-reduced-motion:reduce){.folha{transition:none}}
+
+.book{transform-style:flat;transition:transform 1.5s cubic-bezier(.45,.05,.25,1)}.book.cover{transform:translateX(-25%)}.book.backcover{transform:translateX(25%)}.book .lado{background-size:100% 100%;border-radius:0}.book .vazio::after{display:none}.book.cover .lado::after,.book.backcover .lado::after{display:none}
 </style>
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -111,7 +113,7 @@ a{color:inherit}
 </footer>
 <div class="zoom" id="zoom"><img id="zoomImg" alt=""></div>
 
-<script src="cadastro.js"></script>
+<script src="cadastro.js"></script><script src="book-turn.js"></script>
 <script>
 const TOTAL = 64, LIVRE = 64;    // Livro todo aberto: todas as páginas são lidas direto de livro/p-NN.webp (sem cadastro e sem /api).
                                 // Para voltar a travar, reduza LIVRE (e tire as páginas bloqueadas da pasta pública).
@@ -124,10 +126,10 @@ const src = n => { if (n <= LIVRE) return `livro/p-${nn(n)}.webp`; const c = CIC
 const liberado = n => n <= LIVRE || !!CICadastro.livro();
 const $ = id => document.getElementById(id);
 const book=$('book'), esq=$('esq'), dir=$('dir');
-let single = innerWidth < 760 || innerWidth/innerHeight < 1.05, pag = 1, ocupado = false;
+let single = false, pag = 1, ocupado = false;
 
 // spread: capa sozinha à direita; depois pares (2-3, 4-5, ...)
-const spreadDe = n => single ? [n] : (n === 1 ? [0,1] : (n % 2 === 0 ? [n, n+1] : [n-1, n]));
+const spreadDe = n => n===1?[0,1]:n===TOTAL?[TOTAL,0]:n%2===0?[n,n+1]:[n-1,n];
 function pinta(el, n){
   el.innerHTML=''; el.classList.toggle('vazio', !(n>=1 && n<=TOTAL));
   if(!(n>=1 && n<=TOTAL)){ el.style.backgroundImage='none'; return; }
@@ -147,9 +149,10 @@ function dimensiona(){
 function render(){
   book.classList.toggle('single', single); dimensiona();
   const s = spreadDe(pag);
+  book.classList.toggle('cover',!s[0]); book.classList.toggle('backcover',!s[1]);
   if(single){ pinta(esq, s[0]); } else { pinta(esq, s[0]); pinta(dir, s[1]); }
-  const fim = single ? pag : Math.max(...s.filter(x=>x>=1 && x<=TOTAL));
-  $('pg').textContent = single ? `${pag} / ${TOTAL}` : `${Math.max(1,s[0])}–${Math.min(TOTAL,fim)} / ${TOTAL}`;
+  const fim = Math.max(...s);
+  $('pg').textContent = single ? `${pag} / ${TOTAL}` : `${s[0]&&s[1]?s.join("–"):fim} / ${TOTAL}`;
   $('slider').value = pag;
   $('ant').disabled = pag <= 1; $('prox').disabled = fim >= TOTAL;
   document.querySelectorAll('#thumbs button').forEach((b,i)=>{ const n=i+1; b.classList.toggle('on', s.includes(n)); b.classList.toggle('lk', !liberado(n)); b.style.backgroundImage=`url(${src(liberado(n)?n:1)})`; });
@@ -158,29 +161,22 @@ function render(){
   // pré-carrega o próximo par
   [1,2,3].forEach(k=>{ const n=(single?pag:spreadDe(pag)[1])+k; if(n<=TOTAL && liberado(n)){ const i=new Image(); i.src=src(n);} });
 }
-function alvo(d){ const s=spreadDe(pag); if(single) return pag+d; return d>0 ? (s[1]+1) : Math.max(1, s[0]-2 < 1 ? 1 : s[0]-2); }
+function alvo(d){ const s=spreadDe(pag); if(single) return pag+d; return d>0 ? Math.min(TOTAL,Math.max(...s)+1) : Math.max(1,s[0]-2); }
 function ir(n, animar=true){
   n = Math.max(1, Math.min(TOTAL, n));
-  if(single || !animar || ocupado || matchMedia('(prefers-reduced-motion: reduce)').matches){ pag = n; render(); return; }
-  const de = spreadDe(pag), para = spreadDe(n); if(de[0]===para[0]){ return; }
-  const frente = n > pag; ocupado = true;
-  const f=document.createElement('div'); f.className='folha '+(frente?'vai':'volta');
-  const cara = frente ? de[1] : de[0], costas = frente ? para[0] : para[1];
-  f.innerHTML='<div class="f"></div><div class="b"></div><div class="sombra"></div>';
-  const ff=f.querySelector('.f'), fb=f.querySelector('.b');
-  [ [ff,cara],[fb,costas] ].forEach(([el,p])=>{ if(p>=1&&p<=TOTAL){ el.style.backgroundImage=`url(${(liberado(p)?src(p):'livro/previa-13.webp')})`; if(!liberado(p)) el.style.filter='blur(6px)'; } else el.style.background='transparent'; });
-  book.appendChild(f);
-  // embaixo da folha já aparece o destino
-  if(frente) pinta(dir, para[1]); else pinta(esq, para[0]);
-  requestAnimationFrame(()=>requestAnimationFrame(()=>f.classList.add('virando')));
-  setTimeout(()=>{ f.remove(); pag = n; ocupado=false; render(); }, 760);
+  if(ocupado)return;
+  if(!animar || matchMedia('(prefers-reduced-motion: reduce)').matches){pag=n;render();return;}
+  const de=spreadDe(pag), para=spreadDe(n); if(de[0]===para[0])return;
+  const frente=n>pag; ocupado=true; const edge=!de[0]||!de[1]||!para[0]||!para[1];
+  $('ant').disabled=$('prox').disabled=true;
+  turnBook({book,front:de[frente?1:0],back:para[frente?0:1],forward:frente,url:src,edge,prepare(){book.style.transitionDuration=(edge?1500:1100)+'ms';book.classList.toggle('cover',!para[0]);book.classList.toggle('backcover',!para[1]);if(frente)pinta(dir,para[1]);else pinta(esq,para[0]);},finish(){pag=n;ocupado=false;render();}});
 }
 $('prox').onclick=()=>ir(alvo(1)); $('ant').onclick=()=>ir(alvo(-1));
-$('slider').oninput=e=>{ pag=+e.target.value; render(); };
+$('slider').oninput=e=>{ ir(+e.target.value,false); };
 addEventListener('keydown',e=>{ if(e.key==='ArrowRight'||e.key===' ') { e.preventDefault(); ir(alvo(1)); } if(e.key==='ArrowLeft') ir(alvo(-1)); if(e.key==='Escape'){ $('zoom').classList.remove('on'); $('sum').classList.remove('on'); } });
 let x0=null; $('stage').addEventListener('touchstart',e=>x0=e.touches[0].clientX,{passive:true});
 $('stage').addEventListener('touchend',e=>{ if(x0===null)return; const dx=e.changedTouches[0].clientX-x0; if(Math.abs(dx)>40) ir(alvo(dx<0?1:-1)); x0=null; });
-$('stage').addEventListener('click',e=>{ if(e.target.closest('.trava'))return; const r=book.getBoundingClientRect(); if(e.clientX>r.left+r.width/2) ir(alvo(1)); else ir(alvo(-1)); });
+$('stage').addEventListener('click',e=>{ if(e.target.closest('.trava'))return; const r=book.getBoundingClientRect(); if(pag===1|| (pag!==TOTAL&&e.clientX>r.left+r.width/2)) ir(alvo(1)); else ir(alvo(-1)); });
 // miniaturas e sumário
 for(let n=1;n<=TOTAL;n++){ const b=document.createElement('button'); b.title='Página '+n; b.setAttribute('aria-label','Página '+n); b.onclick=()=>ir(n,false); $('thumbs').appendChild(b); }
 SUM.forEach(([t,n])=>{ const b=document.createElement('button'); b.innerHTML=`${t}<span>${n}${n>LIVRE&&!CICadastro.livro()?' 🔒':''}</span>`; b.onclick=()=>{ $('sum').classList.remove('on'); ir(n,false); }; $('sum').appendChild(b); });
@@ -188,9 +184,9 @@ $('bSum').onclick=()=>{ const on=$('sum').classList.toggle('on'); $('bSum').setA
 $('bZoom').onclick=()=>{ const n=single?pag:Math.max(1,spreadDe(pag)[0]||1); if(!liberado(n)) return; $('zoomImg').src=src(n); $('zoom').classList.add('on'); };
 $('zoom').onclick=()=>$('zoom').classList.remove('on');
 $('bFull').onclick=()=>{ document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen(); };
-addEventListener('resize',()=>{ const s=innerWidth<760||innerWidth/innerHeight<1.05; if(s!==single){ single=s; render(); } else dimensiona(); });
+addEventListener('resize',()=>{ dimensiona(); });
 // começa onde parou (ou no #pN do link)
-const h=location.hash.match(/^#p(\d+)/); let salvo=1; try{ salvo=+(localStorage.getItem('ci-livro-pag')||1); }catch(e){} let ini=h?+h[1]:salvo; pag=Math.max(1,Math.min(TOTAL,ini||1));
+const h=location.hash.match(/^#p(\d+)/); let salvo=1; try{ salvo=+(localStorage.getItem('ci-livro-pag')||1); }catch(e){} let ini=h?+h[1]:1; pag=Math.max(1,Math.min(TOTAL,ini||1));
 render();
 addEventListener('hashchange',()=>{ const m=location.hash.match(/^#p(\d+)/); if(m && +m[1]!==pag) ir(+m[1],false); });
 </script>
