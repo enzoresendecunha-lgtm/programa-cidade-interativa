@@ -166,7 +166,7 @@ function ir(n, animar=true){
   n = Math.max(1, Math.min(TOTAL, n));
   if(ocupado)return;
   if(!animar || matchMedia('(prefers-reduced-motion: reduce)').matches){pag=n;render();return;}
-  const de=spreadDe(pag), para=spreadDe(n); if(de[0]===para[0])return;
+  const de=spreadDe(pag), para=spreadDe(n); if(de[0]===para[0]&&de[1]===para[1])return;
   const frente=n>pag; ocupado=true; const edge=!de[0]||!de[1]||!para[0]||!para[1];
   $('ant').disabled=$('prox').disabled=true;
   turnBook({book,front:de[frente?1:0],back:para[frente?0:1],forward:frente,url:src,edge,prepare(){book.style.transitionDuration=(edge?1500:1100)+'ms';book.classList.toggle('cover',!para[0]);book.classList.toggle('backcover',!para[1]);if(frente)pinta(dir,para[1]);else pinta(esq,para[0]);},finish(){pag=n;ocupado=false;render();}});
@@ -174,9 +174,8 @@ function ir(n, animar=true){
 $('prox').onclick=()=>ir(alvo(1)); $('ant').onclick=()=>ir(alvo(-1));
 $('slider').oninput=e=>{ ir(+e.target.value,false); };
 addEventListener('keydown',e=>{ if(e.key==='ArrowRight'||e.key===' ') { e.preventDefault(); ir(alvo(1)); } if(e.key==='ArrowLeft') ir(alvo(-1)); if(e.key==='Escape'){ $('zoom').classList.remove('on'); $('sum').classList.remove('on'); } });
-let x0=null; $('stage').addEventListener('touchstart',e=>x0=e.touches[0].clientX,{passive:true});
-$('stage').addEventListener('touchend',e=>{ if(x0===null)return; const dx=e.changedTouches[0].clientX-x0; if(Math.abs(dx)>40) ir(alvo(dx<0?1:-1)); x0=null; });
-$('stage').addEventListener('click',e=>{ if(e.target.closest('.trava'))return; const r=book.getBoundingClientRect(); if(pag===1|| (pag!==TOTAL&&e.clientX>r.left+r.width/2)) ir(alvo(1)); else ir(alvo(-1)); });
+let x0=null, dragAt=0; book.style.touchAction='pan-y'; book.addEventListener('pointerdown',e=>{x0=e.clientX;}); window.addEventListener('pointerup',e=>{if(x0===null)return;const dx=e.clientX-x0;x0=null;if(Math.abs(dx)>40){dragAt=Date.now();ir(alvo(dx<0?1:-1));}});book.addEventListener('pointercancel',()=>x0=null);
+$('stage').addEventListener('click',e=>{ if(Date.now()-dragAt<400||e.target.closest('.trava')||!book.contains(e.target))return; const r=book.getBoundingClientRect(); if(pag===1|| (pag!==TOTAL&&e.clientX>r.left+r.width/2)) ir(alvo(1)); else ir(alvo(-1)); });
 // miniaturas e sumário
 for(let n=1;n<=TOTAL;n++){ const b=document.createElement('button'); b.title='Página '+n; b.setAttribute('aria-label','Página '+n); b.onclick=()=>ir(n,false); $('thumbs').appendChild(b); }
 SUM.forEach(([t,n])=>{ const b=document.createElement('button'); b.innerHTML=`${t}<span>${n}${n>LIVRE&&!CICadastro.livro()?' 🔒':''}</span>`; b.onclick=()=>{ $('sum').classList.remove('on'); ir(n,false); }; $('sum').appendChild(b); });
